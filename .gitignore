@@ -1,0 +1,31 @@
+# dependencies
+node_modules
+.env
+.env.local
+packages/nextjs/.env.local
+packages/nextjs/.env
+packages/hardhat/.env.local
+packages/hardhat/.env
+# yarn
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+packages/nextjs/.yarn/
+packages/nextjs/.next/
+packages/hardhat/.yarn/
+
+# eslint
+.eslintcache
+
+# misc
+.DS_Store
+
+# IDE
+.vscode
+.idea
+
+# cli
+dist
