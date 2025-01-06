@@ -10,7 +10,7 @@ interface CanvasProps {
   pixels: { [key: number]: { color: number } };
   selectedColor: string;
   scale: number;
-  pixelOwners: { [key: number]: { color: number } };
+  canvasPixels: { [key: number]: { color: number } };
   isEraserActive: boolean;
 }
 
@@ -20,7 +20,7 @@ export function Canvas({
   pixels,
   selectedColor,
   scale,
-  pixelOwners,
+  canvasPixels,
   isEraserActive
 }: CanvasProps) {
   const [hoveredPixel, setHoveredPixel] = useState<number | null>(null);
@@ -34,7 +34,7 @@ export function Canvas({
   const maxAttempts = 3;
 
   // Define loading state
-  const isLoading = !pixelOwners;
+  const isLoading = !canvasPixels;
 
   const totalPixels = useMemo(() => {
     return 64 * 64; // Hardcode dimensions since we know them
@@ -121,7 +121,7 @@ export function Canvas({
   const pixelElements = useMemo(() => {
     const elements = [];
     for (let i = 0; i < totalPixels; i++) {
-      const pixel = pixels[i] || pixelOwners[i] || { color: 0x000000 };
+      const pixel = pixels[i] || canvasPixels[i] || { color: 0x000000 };
       const isHovered = hoveredPixel === i;
       const coords = {
         x: i % 64,
@@ -164,7 +164,7 @@ export function Canvas({
       );
     }
     return elements;
-  }, [totalPixels, pixels, pixelOwners, onPixelClick, hoveredPixel, pixelSize, isDrawing, isEraserActive]);
+  }, [totalPixels, pixels, canvasPixels, onPixelClick, hoveredPixel, pixelSize, isDrawing, isEraserActive]);
 
   // Add this to prevent default scroll behavior
   useEffect(() => {
@@ -181,12 +181,12 @@ export function Canvas({
   // Add debug logging for loading state
   useEffect(() => {
     console.log("[Canvas] Loading state:", {
-      hasPixelOwners: !!pixelOwners,
-      pixelOwnersCount: pixelOwners ? Object.keys(pixelOwners).length : 0,
+      hasPixelOwners: !!canvasPixels,
+      pixelOwnersCount: canvasPixels ? Object.keys(canvasPixels).length : 0,
       isLoading,
       loadingAttempts
     });
-  }, [pixelOwners, isLoading, loadingAttempts]);
+  }, [canvasPixels, isLoading, loadingAttempts]);
 
   useEffect(() => {
     if (isLoading && loadingAttempts < maxAttempts) {

@@ -3,7 +3,7 @@ import { useReadContract } from "wagmi";
 import { CONTRACTS, CANVAS_ABI } from "~/constants/contracts";
 
 export function useCanvasData() {
-  const [pixelOwners, setPixelOwners] = useState<{ [key: number]: { color: number } }>({});
+  const [canvasPixels, setCanvasPixels] = useState<{ [key: number]: { color: number } }>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -45,7 +45,7 @@ export function useCanvasData() {
           }
         });
 
-        setPixelOwners(processedPixels);
+        setCanvasPixels(processedPixels);
         setIsLoading(false);
       } catch (err) {
         console.error("[useCanvasData] Error processing pixels:", err);
@@ -58,7 +58,7 @@ export function useCanvasData() {
   }, [pixels, canvasWidth, canvasHeight]);
 
   return {
-    pixelOwners,
+    canvasPixels,
     canvasWidth: canvasWidth ? Number(canvasWidth) : undefined,
     canvasHeight: canvasHeight ? Number(canvasHeight) : undefined,
     isLoading: isLoading || isContractLoading || !canvasWidth || !canvasHeight,

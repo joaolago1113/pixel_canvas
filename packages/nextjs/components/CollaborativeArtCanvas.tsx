@@ -15,7 +15,7 @@ import { ImageUploadModal } from "./ImageUploadModal";
 export default function CollaborativeArtCanvas() {
   // All hooks first
   const { address } = useAccount();
-  const { pixelOwners, isLoading, error } = useCanvasData();
+  const { canvasPixels, isLoading, error } = useCanvasData();
   const { 
     balance, 
     buyTokens, 
@@ -84,7 +84,7 @@ export default function CollaborativeArtCanvas() {
         // Restore original pixel state
         setPixels(prev => ({
           ...prev,
-          [pixelId]: originalPixels[pixelId] || { color: 0 }
+          [pixelId]: originalPixels[pixelId] || canvasPixels[pixelId] || { color: 0 }
         }));
         
         // Clean up original pixel state
@@ -129,7 +129,7 @@ export default function CollaborativeArtCanvas() {
     if (!originalPixels[pixelId]) {
       setOriginalPixels(prev => ({
         ...prev,
-        [pixelId]: pixels[pixelId] || { color: 0 }
+        [pixelId]: canvasPixels[pixelId] || pixels[pixelId] || { color: 0 }
       }));
     }
     
@@ -142,7 +142,7 @@ export default function CollaborativeArtCanvas() {
     }));
     
     notification.success("Pixel added to cart!");
-  }, [address, selectedColor, pixels, originalPixels, paintCart, isEraserActive]);
+  }, [address, selectedColor, pixels, originalPixels, paintCart, isEraserActive, canvasPixels]);
 
   const handleCheckout = useCallback(async () => {
     if (!publicClient || paintCart.length === 0 || isCheckingOut) return;
@@ -296,10 +296,11 @@ export default function CollaborativeArtCanvas() {
       // Clear all pixels that are in the cart
       paintCart.forEach(item => {
         if (originalPixels[item.pixelId]) {
+          // Restore original pixel state
           newPixels[item.pixelId] = originalPixels[item.pixelId];
         } else {
-          // If no original state (like from image upload), remove the pixel entirely
-          delete newPixels[item.pixelId];
+          // If no original state exists, use the state from the canvas
+          newPixels[item.pixelId] = canvasPixels[item.pixelId] || { color: 0 };
         }
       });
       return newPixels;
@@ -307,7 +308,7 @@ export default function CollaborativeArtCanvas() {
     
     setPaintCart([]);
     setOriginalPixels({});
-  }, [paintCart, originalPixels]);
+  }, [paintCart, originalPixels, canvasPixels]);
 
   // Add these handler functions
   const handleColorClick = useCallback(() => {
@@ -540,7 +541,7 @@ export default function CollaborativeArtCanvas() {
                   pixels={pixels}
                   selectedColor={selectedColor}
                   scale={scale}
-                  pixelOwners={pixelOwners}
+                  canvasPixels={canvasPixels}
                   isEraserActive={isEraserActive}
                 />
               </div>
