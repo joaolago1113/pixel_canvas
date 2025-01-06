@@ -2,6 +2,7 @@ import React, { useMemo, useState, useCallback, useEffect, useRef } from "react"
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { useReadContract } from "wagmi";
 import { CONTRACTS, CANVAS_ABI } from "~/constants/contracts";
+import { useCanvasData } from "~/hooks/useCanvasData";
 
 interface CanvasProps {
   onPixelClick: (pixelId: number) => void;
@@ -28,24 +29,16 @@ export function Canvas({
   const [isDrawing, setIsDrawing] = useState(false);
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  const { data: canvasWidth } = useReadContract({
-    address: CONTRACTS.COLLABORATIVE_ART_CANVAS,
-    abi: CANVAS_ABI,
-    functionName: "CANVAS_WIDTH",
-  });
+  // Add loading state tracking
+  const [loadingAttempts, setLoadingAttempts] = useState(0);
+  const maxAttempts = 3;
 
-  const { data: canvasHeight } = useReadContract({
-    address: CONTRACTS.COLLABORATIVE_ART_CANVAS,
-    abi: CANVAS_ABI,
-    functionName: "CANVAS_HEIGHT",
-  });
+  // Define loading state
+  const isLoading = !pixelOwners;
 
   const totalPixels = useMemo(() => {
-    if (canvasWidth && canvasHeight) {
-      return Number(canvasWidth) * Number(canvasHeight);
-    }
-    return 0;
-  }, [canvasWidth, canvasHeight]);
+    return 64 * 64; // Hardcode dimensions since we know them
+  }, []);
 
   const handlePixelHover = useCallback((pixelId: number) => {
     setHoveredPixel(pixelId);
@@ -57,7 +50,7 @@ export function Canvas({
   
   // Calculate pixel size and scale based on container
   useEffect(() => {
-    if (!canvasRef.current || !canvasWidth) return;
+    if (!canvasRef.current) return;
 
     const updateSize = () => {
       const GRID_DIMENSION = 64;
@@ -99,7 +92,7 @@ export function Canvas({
         resizeObserver.unobserve(canvasRef.current);
       }
     };
-  }, [canvasWidth, isInitialLoad]);
+  }, [isInitialLoad]);
 
   const handleMouseDown = (pixelId: number) => {
     setIsDrawing(true);
@@ -185,21 +178,45 @@ export function Canvas({
     return () => window.removeEventListener('wheel', preventDefault);
   }, []);
 
-  // Consolidate loading checks
-  const isLoading = !canvasWidth || !canvasHeight || !pixelOwners;
-  const hasNoData = !pixelOwners || Object.keys(pixelOwners).length === 0;
+  // Add debug logging for loading state
+  useEffect(() => {
+    console.log("[Canvas] Loading state:", {
+      hasPixelOwners: !!pixelOwners,
+      pixelOwnersCount: pixelOwners ? Object.keys(pixelOwners).length : 0,
+      isLoading,
+      loadingAttempts
+    });
+  }, [pixelOwners, isLoading, loadingAttempts]);
 
   useEffect(() => {
-    if (pixelOwners && Object.keys(pixelOwners).length > 0) {
-      console.log("[Canvas] Rendering with pixel data:", Object.keys(pixelOwners).length);
+    if (isLoading && loadingAttempts < maxAttempts) {
+      const timer = setTimeout(() => {
+        setLoadingAttempts(prev => prev + 1);
+      }, 1000);
+      return () => clearTimeout(timer);
     }
-  }, [pixelOwners]);
+  }, [isLoading, loadingAttempts]);
 
-  if (isLoading || hasNoData) {
-    console.log("[Canvas] Loading state:", { isLoading, hasNoData, pixelOwnersCount: Object.keys(pixelOwners || {}).length });
+  if (isLoading) {
+    if (loadingAttempts >= maxAttempts) {
+      return (
+        <div className="flex flex-col items-center justify-center h-64 text-red-500">
+          <p>Failed to load canvas data</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+          >
+            Retry
+          </button>
+        </div>
+      );
+    }
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex flex-col items-center justify-center h-64">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+        <p className="mt-4 text-sm text-gray-500">
+          Loading canvas... ({loadingAttempts + 1}/{maxAttempts})
+        </p>
       </div>
     );
   }

@@ -1,105 +1,67 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useReadContract } from "wagmi";
 import { CONTRACTS, CANVAS_ABI } from "~/constants/contracts";
 
 export function useCanvasData() {
-  const [totalPixelsPainted, setTotalPixelsPainted] = useState<number>(0);
   const [pixelOwners, setPixelOwners] = useState<{ [key: number]: { color: number } }>({});
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const [isInitialized, setIsInitialized] = useState(false);
 
-  const retryCountRef = useRef(0);
-  const maxRetries = 10;
+  // Separate dimension queries
+  const { data: canvasWidth } = useReadContract({
+    address: CONTRACTS.COLLABORATIVE_ART_CANVAS,
+    abi: CANVAS_ABI,
+    functionName: "CANVAS_WIDTH",
+  });
 
-  const { data: pixels, isError, error: contractError, refetch, isLoading: isContractLoading } = useReadContract({
+  const { data: canvasHeight } = useReadContract({
+    address: CONTRACTS.COLLABORATIVE_ART_CANVAS,
+    abi: CANVAS_ABI,
+    functionName: "CANVAS_HEIGHT",
+  });
+
+  const { data: pixels, isError, isLoading: isContractLoading } = useReadContract({
     address: CONTRACTS.COLLABORATIVE_ART_CANVAS,
     abi: CANVAS_ABI,
     functionName: "getAllPixels",
-  }) as { 
-    data: bigint[]; 
-    isError: boolean; 
-    error: Error | null;
-    refetch: () => Promise<any>;
-    isLoading: boolean;
-  };
+  }) as { data: bigint[] | undefined; isError: boolean; isLoading: boolean };
 
   useEffect(() => {
-    const retryInterval = 2000;
+    const processPixels = async () => {
+      try {
+        if (!pixels || !canvasWidth || !canvasHeight) {
+          console.log("[useCanvasData] Waiting for data...", { 
+            hasPixels: !!pixels, 
+            hasWidth: !!canvasWidth, 
+            hasHeight: !!canvasHeight 
+          });
+          return;
+        }
 
-    const attemptFetch = () => {
-      if (!isInitialized && retryCountRef.current < maxRetries) {
-        console.log(`[Canvas] Retry ${retryCountRef.current + 1}/${maxRetries}, Pixels: ${!!pixels}, Error: ${!!isError}`);
-        
-        const timer = setTimeout(() => {
-          retryCountRef.current += 1;
-          refetch();
-        }, retryInterval);
-        
-        return () => clearTimeout(timer);
+        const processedPixels: { [key: number]: { color: number } } = {};
+        pixels.forEach((color, index) => {
+          if (color > 0) {
+            processedPixels[index] = { color: Number(color) };
+          }
+        });
+
+        setPixelOwners(processedPixels);
+        setIsLoading(false);
+      } catch (err) {
+        console.error("[useCanvasData] Error processing pixels:", err);
+        setError(err instanceof Error ? err : new Error("Failed to process pixels"));
+        setIsLoading(false);
       }
     };
 
-    return attemptFetch();
-  }, [pixels, isError, refetch, isInitialized]);
-
-  useEffect(() => {
-    if (isError) {
-      console.error("[Canvas] Error fetching canvas data:", contractError);
-      setError(contractError || new Error("Failed to fetch canvas data"));
-      return;
-    }
-
-    if (!pixels) {
-      console.log("[Canvas] No pixel data available yet");
-      return;
-    }
-
-    try {
-      console.log("[Canvas] Processing pixel data, length:", pixels.length);
-      const owners: { [key: number]: { color: number } } = {};
-      let paintedCount = 0;
-
-      pixels.forEach((pixel, index) => {
-        if (pixel !== BigInt(0)) {
-          const colorValue = Number(pixel);
-          owners[index] = { color: colorValue };
-          paintedCount++;
-        }
-      });
-
-      console.log("[Canvas] Processed pixels:", {
-        total: pixels.length,
-        painted: paintedCount,
-        ownersSize: Object.keys(owners).length
-      });
-
-      setPixelOwners(owners);
-      setTotalPixelsPainted(paintedCount);
-      setError(null);
-      setIsInitialized(true);
-      console.log("[Canvas] Data initialization complete");
-    } catch (err) {
-      console.error("[Canvas] Error processing pixel data:", err);
-      setError(err instanceof Error ? err : new Error("Failed to process pixel data"));
-    }
-  }, [pixels, isError, contractError]);
-
-  useEffect(() => {
-    console.log("[Canvas] State update:", {
-      hasPixels: !!pixels,
-      pixelOwnersCount: Object.keys(pixelOwners).length,
-      isLoading: (!pixels && !isError) || !isInitialized || isContractLoading,
-      hasError: !!error,
-      isInitialized
-    });
-  }, [pixels, pixelOwners, error, isInitialized, isContractLoading, isError]);
+    processPixels();
+  }, [pixels, canvasWidth, canvasHeight]);
 
   return {
-    totalPixelsPainted,
     pixelOwners,
-    isLoading: (!pixels && !isError) || !isInitialized || isContractLoading,
-    error,
-    refetch,
-    isInitialized
+    canvasWidth: canvasWidth ? Number(canvasWidth) : undefined,
+    canvasHeight: canvasHeight ? Number(canvasHeight) : undefined,
+    isLoading: isLoading || isContractLoading || !canvasWidth || !canvasHeight,
+    error: error || (isError ? new Error("Failed to fetch data") : null)
   };
 } 

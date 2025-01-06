@@ -14,11 +14,11 @@
 
 - **CollaborativeArtCanvas.sol:**
   - **Description:** Handles the canvas state, pixel color updates, and interactions with PaintTokens, enabling users to paint and own pixels securely.
-  - **Deployment Address:** [0x1e952234E4014B836FfA8877b26Cb61fF206926e](https://block-explorer.testnet.lens.dev/address/0x1e952234E4014B836FfA8877b26Cb61fF206926e)
+  - **Deployment Address:** [0xDdC944c362A3D3b8B2223092Fab0027DF127ae27](https://block-explorer.testnet.lens.dev/address/0xDdC944c362A3D3b8B2223092Fab0027DF127ae27)
   
 - **PaintToken.sol:**
   - **Description:** Manages the creation, distribution, and burning of PaintTokens, ensuring a controlled token economy within the platform.
-  - **Deployment Address:** [0xDdC944c362A3D3b8B2223092Fab0027DF127ae27](https://block-explorer.testnet.lens.dev/address/0xDdC944c362A3D3b8B2223092Fab0027DF127ae27)
+  - **Deployment Address:** [0x1e952234E4014B836FfA8877b26Cb61fF206926e](https://block-explorer.testnet.lens.dev/address/0x1e952234E4014B836FfA8877b26Cb61fF206926e)
 
 ### Frontend Integration
 
