@@ -14,6 +14,14 @@ interface CanvasProps {
   isEraserActive: boolean;
 }
 
+// Add these styles to the canvas container
+const canvasContainerStyle = {
+  touchAction: 'none', // Prevents default touch actions
+  WebkitTouchCallout: 'none', // Prevents iOS callout
+  WebkitUserSelect: 'none', // Prevents text selection
+  WebkitTapHighlightColor: 'transparent', // Removes tap highlight
+} as const;
+
 export function Canvas({ 
   onPixelClick,
   setPixels,
@@ -197,6 +205,11 @@ export function Canvas({
     }
   }, [isLoading, loadingAttempts]);
 
+  // Add touch event handlers
+  const handleTouchStart = (e: React.TouchEvent) => {
+    e.preventDefault(); // Prevent default touch behavior
+  };
+
   if (isLoading) {
     if (loadingAttempts >= maxAttempts) {
       return (
@@ -226,8 +239,9 @@ export function Canvas({
     <div 
       ref={canvasRef} 
       className="w-full h-full relative"
+      onTouchStart={handleTouchStart}
       style={{
-        // Set initial size to prevent layout shift
+        ...canvasContainerStyle,
         minHeight: isInitialLoad ? '0' : undefined,
         aspectRatio: '1 / 1'
       }}
@@ -240,11 +254,13 @@ export function Canvas({
         limitToBounds={true}
         panning={{ disabled: true }}
         pinch={{ disabled: true }}
+        doubleClick={{ disabled: true }} // Disable double click zoom
       >
         <TransformComponent
           wrapperStyle={{
             width: '100%',
             height: '100%',
+            touchAction: 'none', // Add this to prevent touch actions
           }}
           contentStyle={{
             width: '100%',
@@ -252,6 +268,7 @@ export function Canvas({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            touchAction: 'none', // Add this to prevent touch actions
           }}
         >
           <div 
