@@ -2,7 +2,6 @@ import { http } from "viem";
 import { createConfig } from "wagmi";
 import { NETWORKS } from "~/constants/contracts";
 import { getDefaultConfig } from "connectkit";
-import { walletConnect } from "wagmi/connectors";
 
 // Define the local network chain
 const localChain = {
@@ -62,13 +61,5 @@ export const wagmiConfig = createConfig(
 
     // Wallets config
     walletConnectProjectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "",
-
-    // Add additional connectors
-    connectors: [
-      walletConnect({
-        projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "",
-        showQrModal: true,
-      }),
-    ],
   }),
 ); 
