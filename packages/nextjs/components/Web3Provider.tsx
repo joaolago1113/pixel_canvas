@@ -5,6 +5,7 @@ import { ConnectKitProvider } from "connectkit";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider } from "wagmi";
 import { wagmiConfig } from "~/services/web3/wagmiConfig";
+import { NETWORKS } from "@/constants/contracts";
 
 const queryClient = new QueryClient();
 
@@ -27,7 +28,10 @@ export function Web3Provider({ children }: Web3ProviderProps) {
             hideBalance: false,
             hideNoWalletCTA: true,
             walletConnectName: "WalletConnect",
-            initialChainId: 260,
+            initialChainId: NETWORKS.LENS.id,
+            enforceSupportedChains: false,
+            embedGoogleFonts: true,
+            walletConnectCTA: "both"
           }}
         >
           {children}
