@@ -113,7 +113,7 @@
 
 ### Demo Video: 
 
-<video src="demo2.mp4" width="320" height="240" controls>
+<video src="https://github.com/joaolago1113/pixel_canvas/blob/main/demo2.mp4" width="320" height="240" controls>
   Your browser does not support the video tag.
 </video>
 
