@@ -113,9 +113,11 @@
 
 ### Demo Video: 
 
-<video src="https://github.com/joaolago1113/pixel_canvas/blob/main/demo2.mp4" width="320" height="240" controls>
-  Your browser does not support the video tag.
-</video>
+
+https://github.com/user-attachments/assets/2bd533bb-c986-4797-b0b4-c0b3669b955d
+
+
+
 
 ### Screenshots:
 
