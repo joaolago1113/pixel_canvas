@@ -1,7 +1,7 @@
 # Pixel Canvas
 
 ## Team Members
-- Michael
+- [Michael](https://github.com/joaolago1113) (lens: @michael_lens)
 
 ## Project Description
 **Pixel Canvas** is a decentralized platform allowing users to create pixel art collaboratively on a 64x64 canvas. Here users can paint individual pixels or upload entire images while using **PaintTokens**, a currency based on the ERC20 standard, to buy and set colors of the pixels. Smart contracts on the **Lens network** manage all transactions and will ensure secure modification of the canvas. Integration with this blockchain makes the whole experience community-driven and allows everybody to be a part of the collective masterpiece. There's a finite supply of 10 million PaintTokens, which when all burned, the canvas will become immutable.
